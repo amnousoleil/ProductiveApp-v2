@@ -10,10 +10,60 @@
     
     <!-- PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- OVERRIDE MAGIQUE - Styles prioritaires -->
+    <style>
+        /* BULLES TERMINÉES - GLOW VERT INTENSE */
+        .bubble.done,
+        div.bubble.done,
+        .task-bubble.done,
+        div.task-bubble.done {
+            background: linear-gradient(145deg, rgba(34, 197, 94, 0.5) 0%, rgba(22, 163, 74, 0.3) 100%) !important;
+            border: 3px solid #22c55e !important;
+            box-shadow: 
+                0 0 30px rgba(34, 197, 94, 0.8),
+                0 0 60px rgba(34, 197, 94, 0.5),
+                0 0 90px rgba(34, 197, 94, 0.3),
+                0 10px 40px rgba(34, 197, 94, 0.6) !important;
+            opacity: 1 !important;
+        }
+        
+        .bubble.done:hover,
+        div.bubble.done:hover {
+            transform: translateY(-6px) scale(1.03) !important;
+            box-shadow: 
+                0 0 40px rgba(34, 197, 94, 1),
+                0 0 80px rgba(34, 197, 94, 0.6),
+                0 0 120px rgba(34, 197, 94, 0.4) !important;
+        }
+        
+        .bubble.done .bubble-text,
+        div.bubble.done .bubble-text {
+            color: #4ade80 !important;
+            text-shadow: 0 0 15px rgba(74, 222, 128, 0.7) !important;
+            text-decoration: line-through !important;
+        }
+        
+        /* BULLES EN COURS - GLOW ORANGE PULSANT */
+        .bubble.inprogress,
+        div.bubble.inprogress {
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.4) 0%, rgba(249, 115, 22, 0.2) 100%) !important;
+            border: 2px solid rgba(251, 191, 36, 0.8) !important;
+            box-shadow: 
+                0 0 25px rgba(251, 191, 36, 0.6),
+                0 0 50px rgba(251, 191, 36, 0.4) !important;
+            animation: glowPulseOrange 2s ease-in-out infinite !important;
+        }
+        
+        @keyframes glowPulseOrange {
+            0%, 100% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.6), 0 0 50px rgba(251, 191, 36, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.8), 0 0 70px rgba(251, 191, 36, 0.6); }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- ÉCRAN DE CONNEXION -->
+    <!-- ========== ÉCRAN DE CONNEXION ========== -->
     <div id="login-screen" class="login-screen">
         <div class="login-container">
             <img src="https://d1yei2z3i6k35z.cloudfront.net/15127401/69726e0a0f7c4_ChatGPTImage29d%C3%A9c.202514_44_011.png" alt="Logo" class="login-logo">
@@ -33,150 +83,188 @@
         </div>
     </div>
 
-    <!-- CANVAS ANIMATIONS -->
+    <!-- ========== CANVAS ANIMATIONS ========== -->
     <canvas id="matrix-bg"></canvas>
 
-    <!-- APP PRINCIPALE -->
-    <div class="container">
+    <!-- ========== APP PRINCIPALE ========== -->
+    <div class="app-container">
         
         <!-- HEADER -->
-        <header>
-            <div class="header-top">
+        <header class="app-header">
+            <div class="header-left">
                 <div class="user-badge" id="current-user-badge">
                     <span class="user-avatar">👤</span>
                     <span class="user-name">User</span>
                 </div>
-                <h1>Empire Dashboard</h1>
-                <div class="header-actions">
-                    <button id="theme-btn" class="icon-btn">⚙️</button>
-                    <button id="logout-btn" class="icon-btn">🚪</button>
-                </div>
+            </div>
+            
+            <h1 class="app-title">Empire Dashboard</h1>
+            
+            <div class="header-right">
+                <button id="view-toggle-btn" class="icon-btn" title="Changer de vue">📊</button>
+                <button id="theme-btn" class="icon-btn" title="Thème">🎨</button>
+                <button id="logout-btn" class="icon-btn" title="Déconnexion">🚪</button>
             </div>
         </header>
 
         <!-- FILTRES PROJETS -->
-        <div class="projects-filter">
-            <button class="project-filter-btn active" data-project="all">
-                <span class="filter-icon">📊</span>
-                <span class="filter-name">Tout</span>
-                <span class="filter-count" id="count-all">0</span>
+        <nav class="projects-nav">
+            <button class="project-chip active" data-project="all">
+                <span class="chip-icon">📊</span>
+                <span class="chip-name">Tout</span>
+                <span class="chip-count" id="count-all">0</span>
             </button>
-            <div class="projects-filter-scroll" id="projects-filter-list"></div>
-            <button id="add-project-btn" class="add-project-btn-small" title="Nouveau projet">+</button>
-        </div>
+            <div class="projects-scroll" id="projects-filter-list"></div>
+            <button id="add-project-btn" class="add-chip-btn" title="Nouveau projet">+</button>
+        </nav>
 
         <!-- FILTRE UTILISATEUR -->
-        <div class="user-filter">
-            <span class="filter-label">Filtrer par :</span>
+        <div class="user-filter-bar">
+            <label>Filtrer par :</label>
             <select id="user-filter-select">
                 <option value="all">👥 Tout le monde</option>
             </select>
         </div>
 
         <!-- INPUT NOUVELLE TÂCHE -->
-        <div class="input-section">
-            <div class="input-row">
-                <input type="text" id="bubble-input" placeholder="Nouvelle tâche...">
-                <select id="project-select" class="project-select">
-                    <option value="">Projet...</option>
-                </select>
-                <select id="priority-select" class="priority-select">
-                    <option value="2">Normal</option>
-                    <option value="1">🔥 Urgent</option>
-                    <option value="3">Basse</option>
-                </select>
-                <button id="add-bubble-btn" class="send-btn">+</button>
-            </div>
-        </div>
+        <section class="task-input-section">
+            <input type="text" id="task-input" placeholder="Nouvelle tâche..." autofocus>
+            <select id="project-select">
+                <option value="">Projet...</option>
+            </select>
+            <select id="priority-select">
+                <option value="2">Normal</option>
+                <option value="1">🔥 Urgent</option>
+                <option value="3">Basse</option>
+            </select>
+            <button id="add-task-btn" class="btn-primary">+</button>
+        </section>
 
-        <!-- VUE 3 COLONNES -->
-        <div class="main-view">
-            <div class="tasks-column" data-status="todo">
+        <!-- ========== VUE TÂCHES ========== -->
+        
+        <!-- Mode 3 colonnes -->
+        <main class="tasks-view columns-view" id="columns-view">
+            <div class="task-column" data-status="todo">
                 <div class="column-header">
                     <h2>⏳ À faire</h2>
-                    <span class="task-count" id="todo-count">0</span>
+                    <span class="column-count" id="todo-count">0</span>
                 </div>
-                <div class="bubble-list" id="todo-bubbles"></div>
+                <div class="task-list" id="todo-list"></div>
             </div>
             
-            <div class="tasks-column" data-status="inprogress">
+            <div class="task-column" data-status="inprogress">
                 <div class="column-header">
                     <h2>🔄 En cours</h2>
-                    <span class="task-count" id="inprogress-count">0</span>
+                    <span class="column-count" id="inprogress-count">0</span>
                 </div>
-                <div class="bubble-list" id="inprogress-bubbles"></div>
+                <div class="task-list" id="inprogress-list"></div>
             </div>
             
-            <div class="tasks-column" data-status="done">
+            <div class="task-column" data-status="done">
                 <div class="column-header">
                     <h2>✅ Terminé</h2>
-                    <span class="task-count" id="done-count">0</span>
+                    <span class="column-count" id="done-count">0</span>
                 </div>
-                <div class="bubble-list" id="done-bubbles"></div>
+                <div class="task-list" id="done-list"></div>
             </div>
-        </div>
+        </main>
 
-        <!-- JOURNAL -->
-        <div class="journal-section">
-            <h2>📝 Journal du jour</h2>
+        <!-- Mode 2 colonnes (Mes Bulles) -->
+        <main class="tasks-view bubbles-view hidden" id="bubbles-view">
+            <div class="bubbles-column" data-status="todo">
+                <h2>À faire</h2>
+                <div class="bubbles-list" id="bubbles-todo"></div>
+            </div>
+            
+            <div class="bubbles-column" data-status="done">
+                <h2>Terminé ✓</h2>
+                <div class="bubbles-list" id="bubbles-done"></div>
+            </div>
+        </main>
+
+        <!-- ========== JOURNAL AMÉLIORÉ ========== -->
+        <section class="journal-section">
+            <div class="journal-header">
+                <h2>📝 Journal du jour</h2>
+                <div class="journal-stats" id="journal-stats"></div>
+            </div>
+            
+            <!-- Input journal avec catégorie -->
             <div class="journal-input-row">
+                <select id="journal-category">
+                    <option value="task">✅ Tâche</option>
+                    <option value="idea">💡 Idée</option>
+                    <option value="reflection">🤔 Réflexion</option>
+                    <option value="blocker">🚧 Blocage</option>
+                    <option value="win">🏆 Victoire</option>
+                </select>
                 <input type="text" id="journal-input" placeholder="Note ce que tu viens de faire...">
-                <button id="add-journal-btn" class="send-btn">+</button>
+                <select id="journal-energy">
+                    <option value="3">⚡ Haute énergie</option>
+                    <option value="2" selected>😊 Normal</option>
+                    <option value="1">😴 Fatigué</option>
+                </select>
+                <button id="add-journal-btn" class="btn-primary">+</button>
             </div>
-            <div class="journal-list" id="journal-list"></div>
-            <div class="summary-section">
-                <button id="generate-summary">📊 Générer le rapport</button>
-                <button id="download-pdf" class="download-pdf-btn hidden">📄 Télécharger PDF</button>
+            
+            <!-- Liste des entrées -->
+            <div class="journal-entries" id="journal-entries"></div>
+            
+            <!-- Rapport -->
+            <div class="journal-report">
+                <button id="generate-report-btn" class="btn-accent">📊 Générer le rapport</button>
+                <button id="download-pdf-btn" class="btn-secondary hidden">📄 PDF</button>
             </div>
-            <div class="summary-box" id="summary-box"></div>
-        </div>
+            <div class="report-content" id="report-content"></div>
+        </section>
 
     </div>
 
-    <!-- MODALS -->
+    <!-- ========== MODALS ========== -->
+    
+    <!-- Modal Thème -->
     <div id="theme-modal" class="modal hidden">
-        <div class="modal-content theme-modal-content">
-            <h3>✨ Choisis ton ambiance</h3>
-            <div class="theme-slider-container">
-                <input type="range" id="theme-slider" class="theme-slider" min="0" max="8" value="0">
+        <div class="modal-box">
+            <h3>🎨 Choisis ton ambiance</h3>
+            <div class="theme-slider-wrap">
+                <input type="range" id="theme-slider" min="0" max="8" value="0">
             </div>
-            <div class="theme-name" id="theme-name">🏜️ Désert</div>
-            <div class="modal-buttons">
-                <button id="close-theme-modal" class="modal-btn cancel">Fermer</button>
-            </div>
+            <div class="theme-preview" id="theme-name">🏜️ Désert</div>
+            <button id="close-theme-modal" class="btn-secondary">Fermer</button>
         </div>
     </div>
     
+    <!-- Modal Nouveau Projet -->
     <div id="project-modal" class="modal hidden">
-        <div class="modal-content">
+        <div class="modal-box">
             <h3>📁 Nouveau Projet</h3>
             <input type="text" id="new-project-name" class="modal-input" placeholder="Nom du projet...">
             <input type="text" id="new-project-desc" class="modal-input" placeholder="Description (pour l'IA)...">
-            <div class="modal-buttons">
-                <button id="cancel-project" class="modal-btn cancel">Annuler</button>
-                <button id="confirm-project" class="modal-btn confirm">Créer</button>
+            <div class="modal-actions">
+                <button id="cancel-project" class="btn-secondary">Annuler</button>
+                <button id="confirm-project" class="btn-primary">Créer</button>
             </div>
         </div>
     </div>
 
-    <!-- CHATBOT -->
-    <div id="chatbot-toggle" class="chatbot-toggle">
+    <!-- ========== CHATBOT IA ========== -->
+    <button id="chatbot-toggle" class="chatbot-fab">
         <img src="https://d1yei2z3i6k35z.cloudfront.net/15127401/69726e0a0f7c4_ChatGPTImage29d%C3%A9c.202514_44_011.png" alt="AI">
-    </div>
+    </button>
     
-    <div id="chatbot-window" class="chatbot-window hidden">
+    <div id="chatbot-window" class="chatbot-panel hidden">
         <div class="chatbot-header">
-            <div class="chatbot-header-left">
-                <img src="https://d1yei2z3i6k35z.cloudfront.net/15127401/69726e0a0f7c4_ChatGPTImage29d%C3%A9c.202514_44_011.png" alt="AI" class="chatbot-header-logo">
-                <span class="chatbot-header-title">Assistant IA</span>
+            <div class="chatbot-title">
+                <img src="https://d1yei2z3i6k35z.cloudfront.net/15127401/69726e0a0f7c4_ChatGPTImage29d%C3%A9c.202514_44_011.png" alt="AI">
+                <span>Assistant IA</span>
             </div>
-            <div class="chatbot-header-right">
-                <button id="chatbot-size-toggle" class="chatbot-size-toggle">⤢</button>
-                <button id="chatbot-close" class="chatbot-close">×</button>
+            <div class="chatbot-controls">
+                <button id="chatbot-resize" title="Agrandir">⤢</button>
+                <button id="chatbot-close" title="Fermer">×</button>
             </div>
         </div>
         <div class="chatbot-messages" id="chatbot-messages">
-            <div class="chat-message assistant">
+            <div class="chat-msg assistant">
                 Salut Boss ! 👑 Je connais tous tes projets. Demande-moi conseil !
             </div>
         </div>
@@ -186,9 +274,9 @@
         </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="animations.js"></script>
-    <script src="app.js"></script>
+    <!-- ========== SCRIPTS ========== -->
+    <script src="animations.js?v=1"></script>
+    <script src="app.js?v=1"></script>
 
 </body>
 </html>
